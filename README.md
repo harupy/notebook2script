@@ -2,7 +2,7 @@
 
 Convert Jupyter notebooks to python scripts.
 
-## Example
+## Getting Started
 
 ```shell
 python notebook2script -d notebooks -o scripts

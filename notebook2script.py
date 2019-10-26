@@ -16,18 +16,27 @@ def replace_extension(fp, ext):
 
 def get_args():
     parser = argparse.ArgumentParser(description='Extract code from Jupyter notebooks')
-    parser.add_argument('-d', '--dir', required=True, help='Directory where notebooks are stored')
+    parser.add_argument('-d', '--dir', required=True, help='Directory containing notebooks')
     parser.add_argument('-o', '--out', default='scripts',
-                        help='Directory where python scirpts will be saved (default: scripts)')
+                        help='Directory where python scirpts will be stored (default: scripts)')
     return parser.parse_args()
 
 
 def extract_code(notebook):
-    code = ''
+    ret = ''
     for cell in notebook['cells']:
-        if cell['cell_type'] == 'code':
-            code += ''.join(cell['source']) + '\n' * 2
-    return code
+        # skip markdown cells
+        if cell['cell_type'] == 'markdown':
+            continue
+
+        code = ''.join(cell['source'])
+
+        # skip empty cells
+        if code == '':
+            continue
+
+        ret += code + '\n' * 2
+    return ret[:-1]  # trim the last new line
 
 
 def main():
@@ -41,18 +50,20 @@ def main():
         os.makedirs(out_dir)
 
     for fname in os.listdir(in_dir):
-        # process only notebooks
-        if fname.endswith('.ipynb'):
-            print('processing:', fname)
-            nb_path = os.path.join(in_dir, fname)
-            notebook = read_json(nb_path)
-            code = extract_code(notebook)
+        # process only notebooks otherwise skip
+        if not fname.endswith('.ipynb'):
+            continue
 
-            # save extracted code as a python script
-            save_path = os.path.join(out_dir, fname)
-            save_path = replace_extension(save_path, '.py')
-            with open(save_path, 'w') as f:
-                f.write(code)
+        print('processing:', fname)
+        nb_path = os.path.join(in_dir, fname)
+        notebook = read_json(nb_path)
+        code = extract_code(notebook)
+
+        # save extracted code as a python script
+        save_path = os.path.join(out_dir, fname)
+        save_path = replace_extension(save_path, '.py')
+        with open(save_path, 'w') as f:
+            f.write(code)
 
 
 if __name__ == '__main__':

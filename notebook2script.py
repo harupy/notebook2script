@@ -45,25 +45,33 @@ def main():
     in_dir = args.dir
     out_dir = args.out
 
-    # make output directory if it doesn't exist
-    if not os.path.exists(in_dir):
-        os.makedirs(out_dir)
-
-    for fname in os.listdir(in_dir):
-        # process only notebooks otherwise skip
-        if not fname.endswith('.ipynb'):
+    for root, dirs, files in os.walk(in_dir):
+        # skip empty directory and checkpoints
+        if len(files) == 0 or root.endswith('.ipynb_checkpoints'):
             continue
 
-        print('processing:', fname)
-        nb_path = os.path.join(in_dir, fname)
-        notebook = read_json(nb_path)
-        code = extract_code(notebook)
+        # make directory to store script
+        save_dir = os.path.join(out_dir, *root.split(os.sep)[1:])
 
-        # save extracted code as a python script
-        save_path = os.path.join(out_dir, fname)
-        save_path = replace_extension(save_path, '.py')
-        with open(save_path, 'w') as f:
-            f.write(code)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        for fname in files:
+            # process only notebooks otherwise skip
+            if not fname.endswith('.ipynb'):
+                continue
+
+            # extract code from notebook
+            print('processing:', fname)
+            nb_path = os.path.join(root, fname)
+            notebook = read_json(nb_path)
+            code = extract_code(notebook)
+
+            # save extracted code as script
+            save_path = os.path.join(save_dir, fname)
+            save_path = replace_extension(save_path, '.py')
+            with open(save_path, 'w') as f:
+                f.write(code)
 
 
 if __name__ == '__main__':

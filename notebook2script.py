@@ -23,7 +23,9 @@ def get_args():
 
 
 def extract_code(notebook):
+    # filter code cells
     ret = ''
+    divider = '\n\n#%%\n'
     for cell in notebook['cells']:
         # skip markdown cells
         if cell['cell_type'] == 'markdown':
@@ -35,8 +37,9 @@ def extract_code(notebook):
         if code == '':
             continue
 
-        ret += code + '\n' * 2
-    return ret[:-1]  # trim the last new line
+        ret += code + divider
+
+    return ret[:-5]  # trim divider after the last cell
 
 
 def main():

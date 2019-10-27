@@ -29,7 +29,7 @@ def extract_code(notebook):
         if cell['cell_type'] == 'markdown':
             continue
 
-        code = ''.join(cell['source'])
+        code = ''.join(cell['source']).strip()
 
         # skip empty cells
         if code == '':
